@@ -5,46 +5,84 @@ RED				= \033[0;31m
 BLUE			= \033[0;34m
 RESET			= \033[0m
 
-# Docker compose
+# Helper variables
+LOGIN			=	hcavet
+DOMAIN			=	$(LOGIN).42.fr
+DATA_PATH		=	/home/$(LOGIN)/data
+ENV				=	LOGIN=$(LOGIN) DOMAIN=$(DOMAIN) DATA_PATH=$(DATA_PATH)
+
+# Commands
+RM				=	rm -rf
 COMPOSE_COMMAND	=	docker-compose -f
 COMPOSE_FILE	=	./srcs/docker-compose.yml
 
 # Targets
-all				:	info up
+all:		header up
 
-info			:
-					echo "$(BLUE)==============================$(RESET)"
-					echo "$(GREEN)🚀 Starting Inception Stack$(RESET)"
-					echo "$(BLUE)==============================$(RESET)"
+header:		# Display header
+			echo "$(BLUE)==============================$(RESET)"
+			echo "$(GREEN)     🚀 Starting Inception     $(RESET)"
+			echo "$(BLUE)==============================$(RESET)"
 
-up				:
-					echo "$(YELLOW)⬆️  Bringing up containers...$(RESET)"
-					$(COMPOSE_COMMAND) $(COMPOSE_FILE) up -d
-					echo "$(GREEN)✅ Containers are up!$(RESET)"
-					$(MAKE) status
+setup:		# Setup data folders
+			echo "$(BLUE)🛠 Setting up data folders for Inception...$(RESET)"
+			sudo mkdir -p /home/$(LOGIN)
+			sudo mkdir -p $(DATA_PATH)
+			sudo mkdir -p $(DATA_PATH)/wordpress
+			sudo mkdir -p $(DATA_PATH)/mariadb
+			echo "$(GREEN)✅ All required folders are ready!$(RESET)"
 
-down			:
-					echo "$(YELLOW)⬇️ Taking down containers...$(RESET)"
-					$(COMPOSE_COMMAND) $(COMPOSE_FILE) down
-					echo "$(RED)🛑 All containers stopped!$(RESET)"
+up:			setup # Build & start containers
+			echo "$(YELLOW)⬆️  Bringing up containers...$(RESET)"
+			$(ENV) $(COMPOSE_COMMAND) $(COMPOSE_FILE) up -d --build
+			echo "$(GREEN)✅ Containers are up!$(RESET)"
+			$(MAKE) status
 
-stop			:
-					echo "$(YELLOW)✋ Stopping containers...$(RESET)"
-					$(COMPOSE_COMMAND) $(COMPOSE_FILE) stop
-					echo "$(RED)🛑 Containers stopped$(RESET)"
+down:		# Stop & remove containers
+			echo "$(YELLOW)⬇️ Taking down containers...$(RESET)"
+			$(ENV) $(COMPOSE_COMMAND) $(COMPOSE_FILE) down
+			echo "$(RED)🛑 Containers are down$(RESET)"
 
-start			:
-					echo "$(YELLOW)▶️ Starting containers...$(RESET)"
-					$(COMPOSE_COMMAND) $(COMPOSE_FILE) start
-					echo "$(GREEN)✅ Containers started$(RESET)"
-					$(MAKE) status
+stop:		# Stop containers without removing them
+			echo "$(YELLOW)✋ Stopping containers...$(RESET)"
+			$(ENV) $(COMPOSE_COMMAND) $(COMPOSE_FILE) stop
+			echo "$(RED)🛑 Containers stopped$(RESET)"
 
-status			:
-					echo "$(BLUE)🔍 Container status:$(RESET)"
-					docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
+start:		# Start stopped containers
+			echo "$(YELLOW)▶️ Starting containers...$(RESET)"
+			$(ENV) $(COMPOSE_COMMAND) $(COMPOSE_FILE) start
+			echo "$(GREEN)✅ Containers started$(RESET)"
+			$(MAKE) status
 
-logs			:
-					echo "$(BLUE)📜 Showing logs... Press Ctrl+C to exit$(RESET)"
-					$(COMPOSE_COMMAND) $(COMPOSE_FILE) logs -f
+kill:		# Force kill containers
+			echo "$(RED)💀 Force-killing containers...$(RESET)"
+			$(ENV) $(COMPOSE_COMMAND) $(COMPOSE_FILE) kill
+			echo "$(RED)☠️  All containers killed$(RESET)"
 
-.SILENT			:	all info up down stop start status logs
+status:		# List running containers
+			echo "$(BLUE)🔍 Container status:$(RESET)"
+			docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
+
+logs:		# Follow logs
+			echo "$(BLUE)📜 Showing logs... Press Ctrl+C to exit$(RESET)"
+			$(COMPOSE_COMMAND) $(COMPOSE_FILE) logs -f
+
+clean:		# Remove containers and volume
+			echo "$(YELLOW)🧹 Cleaning containers + volumes...$(RESET)"
+			$(ENV) $(COMPOSE_COMMAND) $(COMPOSE_FILE) down -v
+			echo "$(GREEN)✨ Cleaned containers & volumes$(RESET)"
+
+fclean:		clean # Remove containers, prune and delete data
+			echo "$(RED)🔥 Full cleanup (including $(DATA_PATH))...$(RESET)"
+			$(RM) $(DATA_PATH)
+			echo "$(YELLOW)🧨 Pruning Docker volume and image...$(RESET)"
+			docker volume prune -f
+			docker image prune -f
+			echo "$(GREEN)✨ System fully cleaned$(RESET)"
+
+help:		# Display commands
+			echo "$(BLUE)📌 Available commands:$(RESET)"
+			grep -E '^[a-zA-Z]+ *:.*?#' Makefile | \
+				awk 'BEGIN {FS=":.*?#"} {printf "  $(GREEN)%-10s$(RESET) %s\n", $$1, $$2}'
+
+.SILENT:	all header setup up down stop start kill status logs clean fclean help
