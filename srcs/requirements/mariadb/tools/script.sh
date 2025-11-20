@@ -1,12 +1,15 @@
 #!/bin/bash
 
-# sleep 100000
+echo "[mariadb] Starting MariaDB"
 service mariadb start
 
-mariadb -u root -e "CREATE DATABASE IF NOT EXISTS wordpress; "
-mariadb -u root -e "ALTER USER 'root'@'localhost' IDENTIFIED BY '12345';"
-mariadb -u root -p12345 -e "CREATE USER IF NOT EXISTS 'wp'@'%' IDENTIFIED BY 'wp1234';"
-mariadb -u root -p12345 -e "GRANT ALL PRIVILEGES ON wordpress.* TO 'wp'@'%';"
-mariadb -u root -p12345 -e "FLUSH PRIVILEGES;"
+echo "[mariadb] Configuring MariaDB"
+mariadb -u root -p"${DB_ROOT}" -e "ALTER USER 'root'@'localhost' IDENTIFIED BY '${DB_ROOT}';"
+mariadb -u root -p"${DB_ROOT}" -e "CREATE DATABASE IF NOT EXISTS ${DB_NAME};"
+mariadb -u root -p"${DB_ROOT}" -e "CREATE USER IF NOT EXISTS '${DB_USER}'@'%' IDENTIFIED BY '${DB_PSWD}';"
+mariadb -u root -p"${DB_ROOT}" -e "GRANT ALL PRIVILEGES ON ${DB_NAME}.* TO '${DB_USER}'@'%';"
+mariadb -u root -p"${DB_ROOT}" -e "FLUSH PRIVILEGES;"
+
+echo "[mariadb] Switching to foreground MariaDB daemon"
 kill $(cat /var/run/mysqld/mysqld.pid)
-mysqld
+exec mysqld
