@@ -1,11 +1,15 @@
 FROM	debian:bullseye
 
-RUN		apt-get update -y && apt-get upgrade -y && apt-get install mariadb-server -y
+RUN		apt-get update -y && \
+		apt-get install mariadb-server -y && \
+		rm -rf /var/lib/apt/lists/*
+
+RUN		mkdir -p /run/mysqld && chown -R mysql:mysql /run/mysqld
 
 COPY	./tools/50-server.cnf /etc/mysql/mariadb.conf.d/
+COPY	./tools/script.sh /entrypoint.sh
+RUN		chmod +x /entrypoint.sh
 
-COPY	./tools/script.sh /
+EXPOSE	3306
 
-RUN		chmod +x /script.sh
-
-CMD		["/script.sh"]
+CMD		["/entrypoint.sh"]
