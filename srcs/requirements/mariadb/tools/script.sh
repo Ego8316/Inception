@@ -1,15 +1,43 @@
 #!/bin/bash
+set -e
 
-echo "[mariadb] Starting MariaDB"
-service mariadb start
+DATADIR=/var/lib/mysql
+SOCKET=/run/mysqld/mysqld.sock
+INIT_MARKER="$DATADIR/.init_done"
 
-echo "[mariadb] Configuring MariaDB"
-mariadb -u root -e "ALTER USER 'root'@'localhost' IDENTIFIED BY '${DB_ROOT}';"
-mariadb -u root -p"${DB_ROOT}" -e "CREATE DATABASE IF NOT EXISTS ${DB_NAME};"
-mariadb -u root -p"${DB_ROOT}" -e "CREATE USER IF NOT EXISTS '${DB_USER}'@'%' IDENTIFIED BY '${DB_PSWD}';"
-mariadb -u root -p"${DB_ROOT}" -e "GRANT ALL PRIVILEGES ON ${DB_NAME}.* TO '${DB_USER}'@'%';"
-mariadb -u root -p"${DB_ROOT}" -e "FLUSH PRIVILEGES;"
+if [ ! -d "$DATADIR/mysql" ]; then
+  echo "[mariadb] Initializing datadir"
+  mariadb-install-db --user=mysql --datadir="$DATADIR"
+fi
 
-echo "[mariadb] Switching to foreground MariaDB daemon"
-kill $(cat /var/run/mysqld/mysqld.pid)
-exec mysqld
+echo "[mariadb] Starting mysqld in background for preflight"
+mysqld_safe --datadir="$DATADIR" --socket="$SOCKET" --user=mysql &
+
+echo "[mariadb] Waiting for mysqld to start"
+for i in {30..1}; do
+  mysqladmin ping --socket="$SOCKET" --silent && break
+  sleep 1
+done
+
+if ! mysqladmin ping --socket="$SOCKET" --silent; then
+  echo "[mariadb] mysqld failed to start"; exit 1
+fi
+echo "[mariadb] mysqld successfully started"
+
+if [ ! -f "$INIT_MARKER" ]; then
+  echo "[mariadb] Applying bootstrap SQL"
+  mariadb --socket="$SOCKET" -u root <<SQL
+ALTER USER 'root'@'localhost' IDENTIFIED BY '${DB_ROOT}';
+CREATE DATABASE IF NOT EXISTS \`${DB_NAME}\`;
+CREATE USER IF NOT EXISTS '${DB_USER}'@'%' IDENTIFIED BY '${DB_PSWD}';
+GRANT ALL PRIVILEGES ON \`${DB_NAME}\`.* TO '${DB_USER}'@'%';
+FLUSH PRIVILEGES;
+SQL
+  touch "$INIT_MARKER"
+fi
+
+echo "[mariadb] Stopping background mysqld"
+mysqladmin --socket="$SOCKET" -uroot -p"${DB_ROOT}" shutdown
+
+echo "[mariadb] Starting foreground mysqld"
+exec mysqld_safe --datadir="$DATADIR" --socket="$SOCKET" --user=mysql
