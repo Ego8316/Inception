@@ -6,10 +6,10 @@ BLUE			= \033[0;34m
 RESET			= \033[0m
 
 # Helper variables
+NAME			=	inception
 LOGIN			=	hcavet
-DOMAIN			=	$(LOGIN).42.fr
 DATA_PATH		=	/home/$(LOGIN)/data
-ENV				=	LOGIN=$(LOGIN) DOMAIN=$(DOMAIN) DATA_PATH=$(DATA_PATH)
+ENV				=	LOGIN=$(LOGIN) DATA_PATH=$(DATA_PATH) COMPOSE_PROJECT_NAME=$(NAME)
 
 # Commands
 RM				=	rm -rf
@@ -19,6 +19,8 @@ COMPOSE_FILE	=	./srcs/docker-compose.yml
 # Targets
 all:		header up
 
+$(NAME):	all
+
 header:		# Display header
 			echo "$(BLUE)==============================$(RESET)"
 			echo "$(GREEN)     🚀 Starting Inception     $(RESET)"
@@ -26,10 +28,10 @@ header:		# Display header
 
 setup:		# Setup data folders
 			echo "$(BLUE)🛠 Setting up data folders for Inception...$(RESET)"
-			sudo mkdir -p /home/$(LOGIN)
-			sudo mkdir -p $(DATA_PATH)
-			sudo mkdir -p $(DATA_PATH)/wordpress
-			sudo mkdir -p $(DATA_PATH)/mariadb
+			mkdir -p /home/$(LOGIN)
+			mkdir -p $(DATA_PATH)
+			mkdir -p $(DATA_PATH)/wordpress
+			mkdir -p $(DATA_PATH)/mariadb
 			echo "$(GREEN)✅ All required folders are ready!$(RESET)"
 
 up:			setup # Build & start containers
@@ -61,23 +63,24 @@ kill:		# Force kill containers
 
 status:		# List running containers
 			echo "$(BLUE)🔍 Container status:$(RESET)"
-			docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
+			docker ps -a --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
 
 logs:		# Follow logs
 			echo "$(BLUE)📜 Showing logs... Press Ctrl+C to exit$(RESET)"
-			$(COMPOSE_COMMAND) $(COMPOSE_FILE) logs -f
+			$(ENV) $(COMPOSE_COMMAND) $(COMPOSE_FILE) logs -f
 
-clean:		# Remove containers and volume
-			echo "$(YELLOW)🧹 Cleaning containers + volumes...$(RESET)"
+clean:		# Remove containers and volumes
+			echo "$(YELLOW)🧹 Cleaning containers & volumes...$(RESET)"
 			$(ENV) $(COMPOSE_COMMAND) $(COMPOSE_FILE) down -v
 			echo "$(GREEN)✨ Cleaned containers & volumes$(RESET)"
 
 fclean:		clean # Remove containers, prune and delete data
 			echo "$(RED)🔥 Full cleanup (including $(DATA_PATH))...$(RESET)"
 			$(RM) $(DATA_PATH)
-			echo "$(YELLOW)🧨 Pruning Docker volume and image...$(RESET)"
-			docker volume prune -f
+			echo "$(YELLOW)🧨 Pruning Docker images, volume and network...$(RESET)"
 			docker image prune -f
+			docker volume prune -f
+			docker network prune -f
 			echo "$(GREEN)✨ System fully cleaned$(RESET)"
 
 help:		# Display commands

@@ -1,18 +1,19 @@
-FROM	debian:bullseye
+FROM		debian:bullseye
 
-RUN		apt-get update -y && apt-get upgrade -y && \
-		apt-get install -y php php-fpm php-mysql \
-		php-curl php-xml php-zip php-gd php-intl \
-		mariadb-client curl
+RUN			apt-get update -y && \
+			apt-get install -y php php-fpm php-mysql \
+			php-curl php-xml php-zip php-gd php-intl \
+			mariadb-client curl	&& \
+			rm -rf /var/lib/apt/lists/* && \
+			curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar && \
+			chmod +x wp-cli.phar && \
+			mv wp-cli.phar /usr/bin/wp
 
-RUN 	curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar && \
-		chmod +x wp-cli.phar && \
-		mv wp-cli.phar /usr/bin/wp
+COPY		./tools/script.sh /entrypoint.sh
+RUN			chmod +x /entrypoint.sh
 
-COPY	./tools/script.sh /
-RUN		chmod +x /script.sh
+RUN			mkdir -p /var/www/html/wordpress
+WORKDIR		/var/www/html/wordpress
+EXPOSE		9000
 
-RUN		mkdir -p /var/www/html/wordpress
-WORKDIR	/var/www/html/wordpress
-
-CMD		[ "/script.sh" ]
+ENTRYPOINT	[ "/entrypoint.sh" ]
