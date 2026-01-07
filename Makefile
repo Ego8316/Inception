@@ -83,6 +83,8 @@ fclean:		clean # Remove containers, prune and delete data
 
 re:			clean up # Remove containers and volumes then build them again
 
+fre:		fclean up # Remove containers, prune and delete date then build them again
+
 help:		# Display commands
 			echo "$(BLUE)📌 Available commands:$(RESET)"
 			grep -E '^[a-zA-Z]+ *:.*?#' Makefile | \
