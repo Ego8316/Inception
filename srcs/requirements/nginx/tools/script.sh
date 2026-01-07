@@ -2,14 +2,18 @@
 
 set -e
 
+log() {
+	echo "[nginx] $*"
+}
+
 if [ -f "/default.conf.template" ]; then
-	echo "[nginx] Setting up configuration"
+	log "Setting up configuration"
 	envsubst '${WP_DOMAIN}' < /default.conf.template > /etc/nginx/conf.d/default.conf
 	rm default.conf.template
 fi
 
 if [ ! -d "/etc/nginx/ssl" ]; then
-	echo "[nginx] Generating SSL certificate..."
+	log "Generating SSL certificate"
 	mkdir -p /etc/nginx/ssl
 	openssl req -x509 \
 				-nodes \
@@ -20,6 +24,6 @@ if [ ! -d "/etc/nginx/ssl" ]; then
 				-subj "/CN=${WP_DOMAIN}"
 fi
 
-echo "[nginx] Starting nginx"
+log "Starting nginx"
 
 exec nginx -g "daemon off;"
