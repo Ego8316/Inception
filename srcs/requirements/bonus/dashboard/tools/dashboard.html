@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta http-equiv="refresh" content="5" />
+    <title>Inception Dashboard</title>
+    <link rel="stylesheet" href="/style.css" />
+  </head>
+  <body>
+    <header>
+      <div>
+        <p class="eyebrow">// Status</p>
+        <h1>Inception Dashboard</h1>
+      </div>
+      <div class="status-group">
+        <div class="status-block">
+          <div class="label">Refresh interval</div>
+          <div class="value">5s</div>
+        </div>
+        <div class="status-block">
+          <div class="label">Last update</div>
+          <div class="value">{{UPDATED}}</div>
+        </div>
+      </div>
+    </header>
+    <div class="panel">
+      <table>
+        <thead>
+          <tr>
+            <th>Service</th>
+            <th>Role</th>
+            <th>Internal</th>
+            <th>Status</th>
+            <th>Latency</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{ROWS}}
+        </tbody>
+      </table>
+      <div class="links">
+        {{LINKS}}
+      </div>
+    </div>
+  </body>
+</html>

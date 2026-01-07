@@ -1,0 +1,198 @@
+:root {
+  --bg: #e6e6e6;
+  --grid: rgba(0, 0, 0, 0.1);
+  --grid-strong: rgba(0, 0, 0, 0.18);
+  --panel: rgba(47, 47, 47, 0.9);
+  --panel-dark: rgba(39, 39, 39, 0.88);
+  --panel-border: #7a7a7a;
+  --text: #f5f5f5;
+  --text-muted: #bdbdbd;
+  --ink: #121212;
+  --accent: #e2222a;
+  --accent-dark: #b5161c;
+  --ok: #3bd98a;
+  --shadow: rgba(0, 0, 0, 0.35);
+}
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  font-family: "Bahnschrift", "DIN Condensed", "Agency FB", "Segoe UI Variable Display", "Franklin Gothic Medium", "Arial Narrow", sans-serif;
+  background-color: var(--bg);
+  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.8), rgba(226, 226, 226, 0.95));
+  color: var(--ink);
+  min-height: 100vh;
+  padding: 28px clamp(16px, 4vw, 52px) 48px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+body::before,
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: -1;
+}
+body::before {
+  background-image:
+    repeating-linear-gradient(90deg, transparent 0 200px, var(--grid-strong) 200px 202px),
+    repeating-linear-gradient(0deg, transparent 0 120px, var(--grid) 120px 121px);
+}
+body::after {
+  background-image:
+    repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.04) 0, rgba(0, 0, 0, 0.04) 1px, transparent 1px, transparent 6px);
+  opacity: 0.45;
+}
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 18px;
+  margin-bottom: 20px;
+}
+.status-group {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+.eyebrow {
+  color: var(--accent);
+  font-size: 0.75rem;
+  letter-spacing: 0.3em;
+  margin: 0 0 8px;
+}
+h1 {
+  margin: 0;
+  font-size: clamp(2rem, 3vw, 3rem);
+  color: var(--ink);
+}
+.sub {
+  color: var(--ink);
+  margin: 6px 0 0;
+  font-size: 0.85rem;
+}
+.status-block {
+  border: 1px solid var(--accent);
+  background: var(--panel-dark);
+  color: var(--text);
+  padding: 14px 18px;
+  border-radius: 12px;
+  min-width: 170px;
+  box-shadow: 0 6px 16px var(--shadow);
+  text-align: right;
+}
+.status-block .label {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+.status-block .value {
+  font-size: 0.9rem;
+  margin-top: 4px;
+  white-space: nowrap;
+}
+.panel {
+  background: var(--panel);
+  color: var(--text);
+  border: 1px solid var(--panel-border);
+  box-shadow: 0 10px 26px var(--shadow);
+  padding: 20px;
+  border-radius: 12px;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+th,
+td {
+  text-align: left;
+  padding: 12px 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+th {
+  color: var(--accent);
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  font-size: 0.7rem;
+}
+tr.up {
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.04), transparent);
+}
+tr.down {
+  background: linear-gradient(90deg, rgba(226, 34, 42, 0.12), transparent);
+}
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font-size: inherit;
+  letter-spacing: inherit;
+}
+.chip::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+.chip-up {
+  color: var(--text);
+  font-weight: 600;
+}
+.chip-up::before {
+  background: var(--ok);
+}
+.chip-down {
+  color: var(--accent);
+  font-weight: 700;
+}
+.chip-down::before {
+  background: var(--accent);
+}
+.links {
+  margin-top: 18px;
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.links a {
+  color: var(--text);
+  text-decoration: none;
+  border: 1px solid var(--panel-border);
+  padding: 8px 16px;
+  background: #0c0c0c;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.18em;
+  border-radius: 8px;
+}
+.links a:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.footer {
+  margin-top: 22px;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+}
+@media (max-width: 860px) {
+  header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .status-group {
+    justify-content: flex-start;
+  }
+  .status-block {
+    text-align: left;
+  }
+}
