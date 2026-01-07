@@ -1,8 +1,11 @@
 #!/bin/bash
+
 set -e
 
 DB_HOST=${DB_HOST:-mariadb}
 DB_PORT=${DB_PORT:-3306}
+RE_HOST=${RE_HOST:-redis}
+RE_PORT=${RE_PORT:-6379}
 
 cd /var/www/html/wordpress
 
@@ -28,6 +31,22 @@ if [ ! -f wp-config.php ]; then
     --dbname="$DB_NAME" --dbuser="$DB_USER" --dbpass="$DB_PSWD" --dbhost="${DB_HOST}:${DB_PORT}"
 fi
 
+echo "[wordpress] Waiting for Redis"
+for i in {30..1}; do
+  if redis-cli -h "$RE_HOST" -p "$RE_PORT" -a "$RE_PSWD" ping >/dev/null 2>&1; then
+    break
+  fi
+  echo "[wordpress] Redis not ready, retrying... ($i attempts left)"
+  sleep 1
+done
+if ! redis-cli -h "$RE_HOST" -p "$RE_PORT" -a "$RE_PSWD" ping >/dev/null 2>&1; then
+  echo "[wordpress] Redis did not become ready"; exit 1
+fi
+
+wp config set WP_REDIS_HOST "$RE_HOST" --allow-root --type=constant
+wp config set WP_REDIS_PORT "$RE_PORT" --allow-root --type=constant
+wp config set WP_REDIS_PASSWORD "$RE_PSWD" --allow-root --type=constant
+
 if ! wp core is-installed --allow-root; then
   echo "[wordpress] Running wp core install"
   wp core install --allow-root \
@@ -40,6 +59,14 @@ if ! wp user get "$WP_USER" --allow-root >/dev/null 2>&1; then
   wp user create "$WP_USER" "$WP_USER_EMAIL" --allow-root \
     --role=author --user_pass="$WP_USER_PSWD"
 fi
+
+if ! wp plugin is-installed redis-cache --allow-root; then
+  echo "[wordpress] Installing redis-cache plugin"
+  wp plugin install redis-cache --activate --allow-root
+elif ! wp plugin is-active redis-cache --allow-root; then
+  wp plugin activate redis-cache --allow-root
+fi
+wp redis enable --allow-root
 
 echo "[wordpress] Fixing ownership"
 chown -R www-data:www-data /var/www/html/wordpress

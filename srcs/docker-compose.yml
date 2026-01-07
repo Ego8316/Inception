@@ -9,7 +9,7 @@ services:
       - inception
     ports:
       - "443:443"
-    restart:         on-failure
+    restart:         unless-stopped
     volumes:
       - wordpress-data:/var/www/html/
     depends_on:
@@ -20,20 +20,28 @@ services:
     env_file:       .env
     networks:
       - inception
-    restart:        on-failure
+    restart:        unless-stopped
     volumes:
       - wordpress-data:/var/www/html/
     depends_on:
       - mariadb
+      - redis
   mariadb:
     container_name: mariadb
     build:          ./requirements/mariadb
     env_file:       .env
     networks:
       - inception
-    restart:        on-failure
+    restart:        unless-stopped
     volumes:
       - mariadb-data:/var/lib/mysql/
+  redis:
+    container_name: redis
+    build:          ./requirements/bonus/redis
+    env_file:       .env
+    networks:
+      - inception
+    restart:        unless-stopped
 
 volumes:
   wordpress-data:
@@ -53,4 +61,3 @@ networks:
   inception:
     name:   inception
     driver: bridge
-

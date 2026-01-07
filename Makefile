@@ -17,7 +17,7 @@ COMPOSE_COMMAND	=	docker-compose -f
 COMPOSE_FILE	=	./srcs/docker-compose.yml
 
 # Targets
-all:		header up
+all:		header setup up
 
 $(NAME):	all
 
@@ -28,7 +28,6 @@ header:		# Display header
 
 setup:		# Setup data folders
 			echo "$(BLUE)🛠 Setting up data folders for Inception...$(RESET)"
-			mkdir -p /home/$(LOGIN)
 			mkdir -p $(DATA_PATH)
 			mkdir -p $(DATA_PATH)/wordpress
 			mkdir -p $(DATA_PATH)/mariadb
