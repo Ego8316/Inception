@@ -13,7 +13,7 @@ ENV				=	LOGIN=$(LOGIN) DATA_PATH=$(DATA_PATH) COMPOSE_PROJECT_NAME=$(NAME)
 
 # Commands
 RM				=	rm -rf
-COMPOSE_COMMAND	=	docker-compose -f
+COMPOSE_COMMAND	=	docker compose -f
 COMPOSE_FILE	=	./srcs/docker-compose.yml
 
 # Targets
@@ -31,13 +31,13 @@ setup:		# Setup data folders
 			mkdir -p $(DATA_PATH)
 			mkdir -p $(DATA_PATH)/wordpress
 			mkdir -p $(DATA_PATH)/mariadb
+			mkdir -p $(DATA_PATH)/backup
 			echo "$(GREEN)✅ All required folders are ready!$(RESET)"
 
 up:			setup # Build & start containers
 			echo "$(YELLOW)⬆️  Bringing up containers...$(RESET)"
 			$(ENV) $(COMPOSE_COMMAND) $(COMPOSE_FILE) up -d --build
 			echo "$(GREEN)✅ Containers are up!$(RESET)"
-			$(MAKE) status
 
 down:		# Stop & remove containers
 			echo "$(YELLOW)⬇️ Taking down containers...$(RESET)"
@@ -46,14 +46,13 @@ down:		# Stop & remove containers
 
 stop:		# Stop containers without removing them
 			echo "$(YELLOW)✋ Stopping containers...$(RESET)"
-			$(ENV) $(COMPOSE_COMMAND) $(COMPOSE_FILE) stop
+			$(ENV) $(COMPOSE_COMMAND) $(COMPOSE_FILE) stop -t 3
 			echo "$(RED)🛑 Containers stopped$(RESET)"
 
 start:		# Start stopped containers
-			echo "$(YELLOW)▶️ Starting containers...$(RESET)"
+			echo "$(YELLOW)▶️  Starting containers...$(RESET)"
 			$(ENV) $(COMPOSE_COMMAND) $(COMPOSE_FILE) start
 			echo "$(GREEN)✅ Containers started$(RESET)"
-			$(MAKE) status
 
 kill:		# Force kill containers
 			echo "$(RED)💀 Force-killing containers...$(RESET)"
@@ -70,7 +69,7 @@ logs:		# Follow logs
 
 clean:		# Remove containers and volumes
 			echo "$(YELLOW)🧹 Cleaning containers & volumes...$(RESET)"
-			$(ENV) $(COMPOSE_COMMAND) $(COMPOSE_FILE) down -v
+			$(ENV) $(COMPOSE_COMMAND) $(COMPOSE_FILE) down -v -t 3
 			echo "$(GREEN)✨ Cleaned containers & volumes$(RESET)"
 
 fclean:		clean # Remove containers, prune and delete data
@@ -81,6 +80,8 @@ fclean:		clean # Remove containers, prune and delete data
 			docker volume prune -f
 			docker network prune -f
 			echo "$(GREEN)✨ System fully cleaned$(RESET)"
+
+re:			clean up # Remove containers and volumes then build them again
 
 help:		# Display commands
 			echo "$(BLUE)📌 Available commands:$(RESET)"
