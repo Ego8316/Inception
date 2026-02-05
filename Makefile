@@ -41,7 +41,7 @@ up:			setup # Build & start containers
 
 down:		# Stop & remove containers
 			echo "$(YELLOW)⬇️ Taking down containers...$(RESET)"
-			$(ENV) $(COMPOSE_COMMAND) $(COMPOSE_FILE) down
+			$(ENV) $(COMPOSE_COMMAND) $(COMPOSE_FILE) down -t 3
 			echo "$(RED)🛑 Containers are down$(RESET)"
 
 stop:		# Stop containers without removing them
