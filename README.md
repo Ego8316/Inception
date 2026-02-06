@@ -71,4 +71,4 @@ Bonus service endpoints (if enabled):
 - Adminer: https://www.adminer.org/
 - TechWorld with Nana: https://www.youtube.com/watch?v=3c-iBn73dDE
 - Fortsman1's Inception git repository: https://github.com/Forstman1/inception-42
-- AI usage: used to polish scripts, review subject requirements, refine documentation and Makefile (add emojis) and for my many many questions.
+- AI usage: used to polish scripts, review subject requirements, refine documentation and Makefile (add emojis), CSS files, and for my many many questions.
