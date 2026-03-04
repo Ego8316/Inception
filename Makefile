@@ -7,7 +7,7 @@ RESET			= \033[0m
 
 # Helper variables
 NAME			=	inception
-LOGIN			=	hcavet
+LOGIN			=	login
 DATA_PATH		=	/home/$(LOGIN)/data
 ENV				=	LOGIN=$(LOGIN) DATA_PATH=$(DATA_PATH) COMPOSE_PROJECT_NAME=$(NAME)
 
